@@ -26,7 +26,7 @@ export function SiteHeader() {
         <nav className="hidden items-center gap-6 lg:flex">
           {NAV.slice(1).map((item) => {
             const active = pathname === item.href
-            const isSubscribe = item.href === "/subscribe"
+            const isSubscribe = item.href === "/follow"
             if (isSubscribe) {
               return (
                 <Link

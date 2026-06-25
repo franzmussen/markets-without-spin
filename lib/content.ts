@@ -17,7 +17,7 @@ export const NAV: NavItem[] = [
   { label: "Research Reports", href: "/research-reports" },
   { label: "Ideas in Progress", href: "/ideas-in-progress" },
   { label: "About Franz", href: "/about" },
-  { label: "Subscribe", href: "/subscribe" },
+  { label: "Subscribe", href: "/follow" },
 ]
 
 export type Essay = {
