@@ -14,7 +14,7 @@ export const NAV: NavItem[] = [
   { label: "Essays", href: "/essays" },
   { label: "Observations", href: "/observations" },
   { label: "Research Notes", href: "/research-notes" },
-  { label: "Research Reports", href: "/research-reports" },
+  { label: "Research Projects", href: "/research-projects" },
   { label: "Ideas in Progress", href: "/ideas-in-progress" },
   { label: "About Franz", href: "/about" },
   { label: "Subscribe", href: "/follow" },
