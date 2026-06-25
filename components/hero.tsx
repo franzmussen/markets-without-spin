@@ -43,7 +43,7 @@ export function Hero() {
             className="group inline-flex items-center gap-2.5 rounded-sm border border-primary/40 bg-primary/5 px-5 py-2.5 font-mono text-xs uppercase tracking-[0.14em] text-foreground transition-colors hover:border-primary hover:bg-primary/10 hover:text-primary"
           >
             <AppleIcon className="size-4 text-primary" />
-            Listen on Apple Podcasts
+            Subscribe on Apple Podcasts
           </a>
         </div>
       </div>
