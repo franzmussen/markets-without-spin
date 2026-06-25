@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { Headphones, FileText, Calendar, Clock } from "lucide-react"
 import { PageShell } from "@/components/page-shell"
 import { EpisodePlayer } from "@/components/episode-player"
+import { ListenOn } from "@/components/listen-on"
 import {
   getEpisodes,
   formatDuration,
@@ -37,8 +38,11 @@ export default async function PodcastPage() {
       title="Conversations on the forces beneath the surface"
       description="Long-form discussions exploring the incentives that shape markets, corporations, governments, and investor behavior."
     >
+      {/* Listen On — platform links directly below the hero */}
+      <ListenOn />
+
       {/* Featured Episode */}
-      <section className="border-t border-border/40 pt-12">
+      <section className="mt-16 border-t border-border/40 pt-12">
         <p className="font-mono text-[0.65rem] uppercase tracking-[0.28em] text-primary">
           Featured Episode
         </p>
