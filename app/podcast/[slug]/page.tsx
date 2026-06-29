@@ -1,16 +1,19 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { ArrowLeft, Headphones, ExternalLink, Calendar, Clock } from "lucide-react"
+import { ArrowLeft, Calendar, Clock } from "lucide-react"
 import { SiteHeader } from "@/components/site-header"
 import { SiteFooter } from "@/components/site-footer"
 import { EpisodePlayer } from "@/components/episode-player"
+import { EpisodeArticle } from "@/components/episode-article"
 import { ListenOn } from "@/components/listen-on"
 import {
   getEpisodes,
   getEpisodeBySlug,
+  parseDescriptionBlocks,
   formatDuration,
   formatPubDate,
+  PODCAST_LINKS,
 } from "@/lib/podcast"
 
 // Refresh from the RSS feed hourly so new episodes get their own page.
@@ -52,6 +55,7 @@ export default async function EpisodeDetailPage({
 
   const date = formatPubDate(episode.pubDate)
   const duration = formatDuration(episode.durationSeconds)
+  const blocks = parseDescriptionBlocks(episode.descriptionHtml)
   const label =
     episode.episodeNumber != null
       ? `Episode ${String(episode.episodeNumber).padStart(3, "0")}`
@@ -91,42 +95,12 @@ export default async function EpisodeDetailPage({
             <EpisodePlayer
               src={episode.audioUrl}
               initialDuration={episode.durationSeconds ?? 0}
+              appleUrl={PODCAST_LINKS.apple}
+              spotifyUrl={PODCAST_LINKS.spotify}
             />
           )}
 
-          <div className="mt-7 flex flex-wrap items-center gap-3">
-            {episode.audioUrl && (
-              <a
-                href={episode.audioUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-sm bg-primary px-6 py-3 font-mono text-xs uppercase tracking-[0.16em] text-primary-foreground transition-opacity hover:opacity-90"
-              >
-                <Headphones className="size-4" /> Listen Now
-              </a>
-            )}
-            {episode.pageUrl && (
-              <a
-                href={episode.pageUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-sm border border-primary/50 px-6 py-3 font-mono text-xs uppercase tracking-[0.16em] text-primary transition-colors hover:bg-primary/10"
-              >
-                <ExternalLink className="size-4" /> Open on Libsyn
-              </a>
-            )}
-          </div>
-
-          {episode.description && (
-            <div className="mt-10">
-              <p className="font-mono text-[0.65rem] uppercase tracking-[0.28em] text-primary">
-                About this episode
-              </p>
-              <p className="mt-4 max-w-2xl text-pretty font-serif text-lg leading-relaxed text-muted-foreground">
-                {episode.description}
-              </p>
-            </div>
-          )}
+          <EpisodeArticle blocks={blocks} />
         </article>
 
         <div className="py-12">
