@@ -16,6 +16,8 @@ export const PILOT_FALLBACK: PodcastEpisode = {
   title: "Pilot Episode: Introduction to Markets Without Spin",
   description:
     "A dramatic exploration of how institutions fail when incentives become distorted—and why stock buybacks, debt, and executive incentives often accelerate decline.",
+  excerpt:
+    "A dramatic exploration of how institutions fail when incentives become distorted—and why stock buybacks, debt, and executive incentives often accelerate decline.",
   descriptionHtml:
     "<p>A dramatic exploration of how institutions fail when incentives become distorted—and why stock buybacks, debt, and executive incentives often accelerate decline.</p>",
   audioUrl:
@@ -33,6 +35,8 @@ export type PodcastEpisode = {
   title: string
   /** Plain-text description, used for previews and SEO metadata. */
   description: string
+  /** Short, clean summary for episode cards — never the full article. */
+  excerpt: string
   /** Raw HTML description from the feed, used to render a structured article. */
   descriptionHtml: string
   audioUrl: string | null
@@ -165,6 +169,7 @@ export async function getEpisodes(): Promise<PodcastEpisode[]> {
         slug: buildSlug(episodeNumber, title, id),
         title,
         description,
+        excerpt: buildExcerpt(descriptionHtml, description),
         descriptionHtml,
         audioUrl,
         pageUrl: toText(item.link) || null,
@@ -189,6 +194,39 @@ export async function getEpisodeBySlug(
 ): Promise<PodcastEpisode | null> {
   const episodes = await getEpisodes()
   return episodes.find((ep) => ep.slug === slug) ?? null
+}
+
+/**
+ * Builds a short, clean card summary from the episode's HTML description.
+ * It prefers the "Summary" paragraph, falls back to the first real paragraph,
+ * and truncates at a word boundary so cards never show the full article.
+ */
+function buildExcerpt(html: string, fallback: string, maxLength = 220): string {
+  const blocks = parseDescriptionBlocks(html)
+  let text = ""
+
+  const summaryIndex = blocks.findIndex(
+    (b) => b.type === "heading" && /about this episode/i.test(b.text),
+  )
+  if (summaryIndex !== -1) {
+    const next = blocks[summaryIndex + 1]
+    if (next?.type === "paragraph") text = next.text
+  }
+
+  if (!text) {
+    const firstParagraph = blocks.find((b) => b.type === "paragraph")
+    if (firstParagraph && firstParagraph.type === "paragraph") {
+      text = firstParagraph.text
+    }
+  }
+
+  if (!text) text = fallback
+  text = text.trim()
+
+  if (text.length <= maxLength) return text
+  const truncated = text.slice(0, maxLength)
+  const lastSpace = truncated.lastIndexOf(" ")
+  return `${truncated.slice(0, lastSpace > 0 ? lastSpace : maxLength).trim()}…`
 }
 
 /** Splits an HTML fragment on <br> tags into cleaned, bullet-free items. */
