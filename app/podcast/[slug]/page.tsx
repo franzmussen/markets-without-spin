@@ -103,6 +103,39 @@ export default async function EpisodeDetailPage({
           <EpisodeArticle blocks={blocks} />
         </article>
 
+        <section
+          aria-labelledby="enjoyed-heading"
+          className="mt-12 rounded-sm border border-primary/30 bg-card px-6 py-8 sm:px-8"
+        >
+          <h2
+            id="enjoyed-heading"
+            className="font-heading text-2xl font-bold text-foreground"
+          >
+            Enjoyed this episode?
+          </h2>
+          <p className="mt-3 text-pretty font-serif text-base leading-relaxed text-muted-foreground">
+            Subscribe on{" "}
+            <a
+              href={PODCAST_LINKS.apple}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-primary underline-offset-4 transition-colors hover:underline"
+            >
+              Apple Podcasts
+            </a>{" "}
+            or{" "}
+            <a
+              href={PODCAST_LINKS.spotify}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-primary underline-offset-4 transition-colors hover:underline"
+            >
+              Spotify
+            </a>{" "}
+            to receive every new episode automatically.
+          </p>
+        </section>
+
         <div className="py-12">
           <ListenOn />
         </div>
