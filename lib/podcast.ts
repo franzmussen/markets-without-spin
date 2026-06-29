@@ -5,6 +5,7 @@ export const PODCAST_RSS_URL = "https://feeds.libsyn.com/622775/rss"
 // Fallback used only if the feed cannot be reached at request time.
 export const PILOT_FALLBACK: PodcastEpisode = {
   id: "pilot-fallback",
+  slug: "episode-1-pilot-episode-introduction-to-markets-without-spin",
   title: "Pilot Episode: Introduction to Markets Without Spin",
   description:
     "A dramatic exploration of how institutions fail when incentives become distorted—and why stock buybacks, debt, and executive incentives often accelerate decline.",
@@ -19,6 +20,7 @@ export const PILOT_FALLBACK: PodcastEpisode = {
 
 export type PodcastEpisode = {
   id: string
+  slug: string
   title: string
   description: string
   audioUrl: string | null
@@ -26,6 +28,35 @@ export type PodcastEpisode = {
   pubDate: string | null
   durationSeconds: number | null
   episodeNumber: number | null
+}
+
+/**
+ * Builds a stable, URL-friendly slug for an episode, e.g.
+ * "episode-2-the-buyback-machine". Falls back to the episode id when a
+ * title is unavailable so every episode always has a unique route.
+ */
+export function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/&/g, " and ")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+}
+
+function buildSlug(
+  episodeNumber: number | null,
+  title: string,
+  fallback: string,
+): string {
+  const titleSlug = slugify(title)
+  const base = titleSlug || slugify(fallback) || "episode"
+  if (episodeNumber == null) return base
+  // Avoid duplicating the episode number when the title already starts with
+  // it, e.g. "Episode 2 – The Buyback Machine" → "episode-2-the-buyback-machine".
+  if (base.startsWith(`episode-${episodeNumber}-`) || base === `episode-${episodeNumber}`) {
+    return base
+  }
+  return `episode-${episodeNumber}-${base}`
 }
 
 function toText(value: unknown): string {
@@ -105,16 +136,20 @@ export async function getEpisodes(): Promise<PodcastEpisode[]> {
       const description = stripHtml(
         toText(item.description) || toText(item["itunes:summary"]),
       )
+      const title = stripHtml(toText(item.title))
+      const episodeNumber = episodeNumberRaw ? Number(episodeNumberRaw) : null
+      const id = toText(item.guid) || audioUrl || `episode-${index}`
 
       return {
-        id: toText(item.guid) || audioUrl || `episode-${index}`,
-        title: stripHtml(toText(item.title)),
+        id,
+        slug: buildSlug(episodeNumber, title, id),
+        title,
         description,
         audioUrl,
         pageUrl: toText(item.link) || null,
         pubDate: toText(item.pubDate) || null,
         durationSeconds: parseDuration(durationRaw),
-        episodeNumber: episodeNumberRaw ? Number(episodeNumberRaw) : null,
+        episodeNumber,
       }
     })
 
@@ -122,4 +157,15 @@ export async function getEpisodes(): Promise<PodcastEpisode[]> {
   } catch {
     return [PILOT_FALLBACK]
   }
+}
+
+/**
+ * Returns the single episode matching the given slug, or null when no
+ * episode with that slug exists in the feed.
+ */
+export async function getEpisodeBySlug(
+  slug: string,
+): Promise<PodcastEpisode | null> {
+  const episodes = await getEpisodes()
+  return episodes.find((ep) => ep.slug === slug) ?? null
 }

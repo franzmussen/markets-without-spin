@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import Link from "next/link"
 import { Headphones, FileText, Calendar, Clock } from "lucide-react"
 import { PageShell } from "@/components/page-shell"
 import { EpisodePlayer } from "@/components/episode-player"
@@ -90,16 +91,12 @@ export default async function PodcastPage() {
                   <Headphones className="size-4" /> Listen Now
                 </a>
               )}
-              {featured.pageUrl && (
-                <a
-                  href={featured.pageUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-sm border border-primary/50 px-6 py-3 font-mono text-xs uppercase tracking-[0.16em] text-primary transition-colors hover:bg-primary/10"
-                >
-                  <FileText className="size-4" /> Episode Page
-                </a>
-              )}
+              <Link
+                href={`/podcast/${featured.slug}`}
+                className="inline-flex items-center gap-2 rounded-sm border border-primary/50 px-6 py-3 font-mono text-xs uppercase tracking-[0.16em] text-primary transition-colors hover:bg-primary/10"
+              >
+                <FileText className="size-4" /> Episode Page
+              </Link>
             </div>
           </div>
         </article>
@@ -130,18 +127,12 @@ export default async function PodcastPage() {
                       {duration && <span>{duration}</span>}
                     </div>
                     <h3 className="mt-2 text-balance font-heading text-xl font-bold leading-snug text-foreground">
-                      {ep.pageUrl ? (
-                        <a
-                          href={ep.pageUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="transition-colors hover:text-primary"
-                        >
-                          {ep.title}
-                        </a>
-                      ) : (
-                        ep.title
-                      )}
+                      <Link
+                        href={`/podcast/${ep.slug}`}
+                        className="transition-colors hover:text-primary"
+                      >
+                        {ep.title}
+                      </Link>
                     </h3>
                     {ep.description && (
                       <p className="mt-2 max-w-2xl text-pretty leading-relaxed text-muted-foreground">
@@ -154,6 +145,14 @@ export default async function PodcastPage() {
                         initialDuration={ep.durationSeconds ?? 0}
                       />
                     )}
+                    <div className="mt-5">
+                      <Link
+                        href={`/podcast/${ep.slug}`}
+                        className="inline-flex items-center gap-2 rounded-sm border border-primary/50 px-5 py-2.5 font-mono text-[0.7rem] uppercase tracking-[0.16em] text-primary transition-colors hover:bg-primary/10"
+                      >
+                        <FileText className="size-4" /> Episode Page
+                      </Link>
+                    </div>
                   </div>
                 </article>
               )
