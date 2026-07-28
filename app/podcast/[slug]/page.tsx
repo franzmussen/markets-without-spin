@@ -137,29 +137,47 @@ export default async function EpisodeArticlePage({
         )}
       </div>
 
-      {/* Summary */}
-      <section className="mt-14 border-t border-border/40 pt-10">
-        <p className="flex items-center gap-2 font-mono text-[0.65rem] uppercase tracking-[0.28em] text-primary">
-          <FileText className="size-3.5" /> Episode Summary
-        </p>
-        <div className="mt-5 max-w-2xl space-y-4 text-pretty font-serif text-lg leading-relaxed text-muted-foreground">
-          {episode.description ? (
-            <p>{episode.description}</p>
-          ) : (
-            <p>
-              A full written summary for this episode is on the way. In the
-              meantime, press play above to listen to the conversation.
+      {/* Long-form article (Executive Summary, Historical Background, etc.) */}
+      {extras.article.length > 0 ? (
+        extras.article.map((sec, i) => (
+          <section
+            key={sec.heading}
+            className={`border-t border-border/40 pt-10 ${i === 0 ? "mt-14" : "mt-12"}`}
+          >
+            <p className="flex items-center gap-2 font-mono text-[0.65rem] uppercase tracking-[0.28em] text-primary">
+              <FileText className="size-3.5" /> {sec.heading}
             </p>
-          )}
-        </div>
-      </section>
+            <div className="mt-5 max-w-2xl space-y-5 text-pretty font-serif text-lg leading-relaxed text-muted-foreground">
+              {sec.paragraphs.map((para, j) => (
+                <p key={j}>{para}</p>
+              ))}
+            </div>
+          </section>
+        ))
+      ) : (
+        <section className="mt-14 border-t border-border/40 pt-10">
+          <p className="flex items-center gap-2 font-mono text-[0.65rem] uppercase tracking-[0.28em] text-primary">
+            <FileText className="size-3.5" /> Episode Summary
+          </p>
+          <div className="mt-5 max-w-2xl space-y-4 text-pretty font-serif text-lg leading-relaxed text-muted-foreground">
+            {episode.description ? (
+              <p>{episode.description}</p>
+            ) : (
+              <p>
+                A full written summary for this episode is on the way. In the
+                meantime, press play above to listen to the conversation.
+              </p>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* Key takeaways */}
-      <section className="mt-14 border-t border-border/40 pt-10">
-        <p className="flex items-center gap-2 font-mono text-[0.65rem] uppercase tracking-[0.28em] text-primary">
-          <ListChecks className="size-3.5" /> Key Takeaways
-        </p>
-        {extras.keyTakeaways.length > 0 ? (
+      {extras.keyTakeaways.length > 0 && (
+        <section className="mt-14 border-t border-border/40 pt-10">
+          <p className="flex items-center gap-2 font-mono text-[0.65rem] uppercase tracking-[0.28em] text-primary">
+            <ListChecks className="size-3.5" /> Key Takeaways
+          </p>
           <ul className="mt-6 max-w-2xl space-y-4">
             {extras.keyTakeaways.map((point, i) => (
               <li key={i} className="flex gap-4">
@@ -172,20 +190,15 @@ export default async function EpisodeArticlePage({
               </li>
             ))}
           </ul>
-        ) : (
-          <p className="mt-5 max-w-2xl text-pretty font-serif leading-relaxed text-muted-foreground">
-            Key takeaways for this episode are being prepared. Check back soon
-            for the distilled highlights.
-          </p>
-        )}
-      </section>
+        </section>
+      )}
 
       {/* References */}
-      <section className="mt-14 border-t border-border/40 pt-10">
-        <p className="flex items-center gap-2 font-mono text-[0.65rem] uppercase tracking-[0.28em] text-primary">
-          <BookMarked className="size-3.5" /> References
-        </p>
-        {extras.references.length > 0 ? (
+      {extras.references.length > 0 && (
+        <section className="mt-14 border-t border-border/40 pt-10">
+          <p className="flex items-center gap-2 font-mono text-[0.65rem] uppercase tracking-[0.28em] text-primary">
+            <BookMarked className="size-3.5" /> References
+          </p>
           <ul className="mt-6 max-w-2xl space-y-3">
             {extras.references.map((ref, i) => (
               <li key={i}>
@@ -207,32 +220,20 @@ export default async function EpisodeArticlePage({
               </li>
             ))}
           </ul>
-        ) : (
-          <p className="mt-5 max-w-2xl text-pretty font-serif leading-relaxed text-muted-foreground">
-            Sources and further reading referenced in this episode will be
-            listed here.
-          </p>
-        )}
-      </section>
+        </section>
+      )}
 
-      {/* Transcript */}
-      <section className="mt-14 border-t border-border/40 pt-10">
-        <p className="flex items-center gap-2 font-mono text-[0.65rem] uppercase tracking-[0.28em] text-primary">
-          <ScrollText className="size-3.5" /> Transcript
-        </p>
-        {extras.transcript ? (
+      {/* Transcript — only rendered when a transcript is available */}
+      {extras.transcript && (
+        <section className="mt-14 border-t border-border/40 pt-10">
+          <p className="flex items-center gap-2 font-mono text-[0.65rem] uppercase tracking-[0.28em] text-primary">
+            <ScrollText className="size-3.5" /> Transcript
+          </p>
           <div className="mt-6 max-w-2xl whitespace-pre-line text-pretty font-serif leading-relaxed text-muted-foreground">
             {extras.transcript}
           </div>
-        ) : (
-          <div className="mt-6 rounded-sm border border-dashed border-border/70 bg-card/40 p-8">
-            <p className="max-w-2xl text-pretty font-serif leading-relaxed text-muted-foreground">
-              A full transcript of this episode is coming soon. We&apos;re
-              working on accurate, readable transcripts for every conversation.
-            </p>
-          </div>
-        )}
-      </section>
+        </section>
+      )}
 
       {/* Related episodes */}
       {related.length > 0 && (
