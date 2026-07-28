@@ -36,7 +36,7 @@ export function SiteFooter() {
 
           <div>
             <p className="font-mono text-[0.62rem] uppercase tracking-[0.24em] text-muted-foreground">
-              Podcast
+              More
             </p>
             <ul className="mt-4 space-y-2.5">
               {FOOTER_SECONDARY.map((item) => (

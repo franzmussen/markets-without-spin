@@ -32,7 +32,7 @@ export function Hero() {
           <span className="text-border" aria-hidden>
             /
           </span>
-          <span>CPA &amp; investment-advisory co-founder</span>
+          <span>Investor, educator &amp; advisory-firm co-founder</span>
         </div>
 
         <div className="mt-9 flex flex-wrap items-center gap-4">

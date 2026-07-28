@@ -1,6 +1,6 @@
 "use client"
 
-import { useActionState, useEffect, useRef, useState } from "react"
+import { useActionState, useState } from "react"
 import { Check, Loader2 } from "lucide-react"
 import { subscribe, type SubscribeResult } from "@/app/actions/subscribe"
 
@@ -9,16 +9,9 @@ export function SubscribeForm() {
     SubscribeResult | null,
     FormData
   >(subscribe, null)
-  const [submittedEmail, setSubmittedEmail] = useState("")
-  const formRef = useRef<HTMLFormElement>(null)
-
-  // Capture the email that was successfully submitted for the confirmation copy.
-  useEffect(() => {
-    if (state?.ok) {
-      const value = formRef.current?.elements.namedItem("email")
-      if (value instanceof HTMLInputElement) setSubmittedEmail(value.value)
-    }
-  }, [state])
+  // Track the email as it's typed so the confirmation can reference it even
+  // after the form itself unmounts on success.
+  const [email, setEmail] = useState("")
 
   if (state?.ok) {
     return (
@@ -33,8 +26,8 @@ export function SubscribeForm() {
               : "You're on the list"}
           </p>
           <p className="text-sm text-muted-foreground">
-            {submittedEmail
-              ? `We'll reach you at ${submittedEmail} when the next essay is published.`
+            {email
+              ? `We'll reach you at ${email} when the next essay is published.`
               : "We'll reach you when the next essay is published."}
           </p>
         </div>
@@ -43,7 +36,7 @@ export function SubscribeForm() {
   }
 
   return (
-    <form ref={formRef} action={formAction} className="flex flex-col gap-3">
+    <form action={formAction} className="flex flex-col gap-3">
       <div className="flex flex-col gap-3 sm:flex-row">
         <label htmlFor="email" className="sr-only">
           Email address
@@ -55,6 +48,8 @@ export function SubscribeForm() {
           required
           autoComplete="email"
           placeholder="you@example.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           disabled={pending}
           className="flex-1 rounded-sm border border-input bg-background px-4 py-3 text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary disabled:opacity-60"
         />

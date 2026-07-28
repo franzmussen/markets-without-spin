@@ -245,10 +245,10 @@ export default async function HomePage() {
               <p className="text-pretty font-serif text-xl leading-relaxed text-foreground/85">
                 Markets Without Spin is written by Franz Amussen, who began
                 investing in 1969 and has worked professionally in the field
-                since 1985. He passed the CPA examination, earned a
-                Master&apos;s in Geography from the University of Utah, and
-                co-founded an investment advisory firm&mdash;a lifetime spent
-                studying the incentives that move markets and institutions.
+                since 1985. An investor, entrepreneur, and financial educator,
+                he co-founded a large investment advisory firm&mdash;a lifetime
+                spent studying the incentives that move markets and
+                institutions.
               </p>
               <Link
                 href="/about"

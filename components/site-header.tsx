@@ -25,19 +25,8 @@ export function SiteHeader() {
 
         <nav className="hidden items-center gap-6 lg:flex">
           {NAV.map((item) => {
-            const active = pathname === item.href
-            const isSubscribe = item.href === SUBSCRIBE_HREF
-            if (isSubscribe) {
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="rounded-sm border border-primary px-4 py-1.5 font-mono text-[0.7rem] uppercase tracking-[0.18em] text-primary transition-colors hover:bg-primary hover:text-primary-foreground"
-                >
-                  {item.label}
-                </Link>
-              )
-            }
+            const active =
+              pathname === item.href || pathname.startsWith(`${item.href}/`)
             return (
               <Link
                 key={item.href}
@@ -51,6 +40,12 @@ export function SiteHeader() {
               </Link>
             )
           })}
+          <Link
+            href={SUBSCRIBE_HREF}
+            className="rounded-sm border border-primary px-4 py-1.5 font-mono text-[0.7rem] uppercase tracking-[0.18em] text-primary transition-colors hover:bg-primary hover:text-primary-foreground"
+          >
+            Subscribe
+          </Link>
         </nav>
 
         <button
@@ -66,7 +61,8 @@ export function SiteHeader() {
       {open && (
         <nav className="border-t border-border/70 bg-background px-5 pb-6 pt-2 lg:hidden">
           {NAV.map((item) => {
-            const active = pathname === item.href
+            const active =
+              pathname === item.href || pathname.startsWith(`${item.href}/`)
             return (
               <Link
                 key={item.href}
@@ -81,6 +77,13 @@ export function SiteHeader() {
               </Link>
             )
           })}
+          <Link
+            href={SUBSCRIBE_HREF}
+            onClick={() => setOpen(false)}
+            className="mt-4 block rounded-sm border border-primary px-4 py-2.5 text-center font-mono text-xs uppercase tracking-[0.18em] text-primary"
+          >
+            Subscribe
+          </Link>
         </nav>
       )}
     </header>

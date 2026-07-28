@@ -21,13 +21,15 @@ export default function AboutPage() {
           </p>
           <p>
             Over the past four decades, I have worked professionally in the investment field,
-            beginning my career in 1985.
+            beginning my career in 1985&mdash;as an investor, an entrepreneur, and a financial
+            educator.
           </p>
           <p>
-            I passed the CPA examination, earned a Master&apos;s Degree in Geography from the
-            University of Utah, and co-founded an investment advisory firm that I helped build over
-            many years. Throughout my career, I have spent a lifetime studying the incentives that
-            drive markets, governments, and institutions.
+            I co-founded a large investment advisory firm and helped build it over many years. I
+            passed the Uniform CPA Examination and earned a Master&apos;s Degree in Geography from
+            the University of Utah, though I was never licensed as a CPA. Throughout my career, I
+            have spent a lifetime studying the incentives that drive markets, governments, and
+            institutions.
           </p>
           <p>Markets Without Spin is the culmination of those experiences.</p>
           <p className="font-heading text-2xl font-semibold text-primary">
