@@ -20,9 +20,9 @@ export const metadata: Metadata = {
 // Refresh the page from the RSS feed hourly so new episodes appear automatically.
 export const revalidate = 3600
 
-function episodeLabel(ep: PodcastEpisode, fallbackIndex: number) {
-  const num = ep.episodeNumber ?? fallbackIndex
-  return `Episode ${String(num).padStart(3, "0")}`
+function episodeLabel(ep: PodcastEpisode) {
+  if (ep.episodeNumber == null) return "Pilot Episode"
+  return `Episode ${String(ep.episodeNumber).padStart(2, "0")}`
 }
 
 export default async function PodcastPage() {
@@ -50,7 +50,7 @@ export default async function PodcastPage() {
         <article className="mt-6 overflow-hidden rounded-sm border border-border/60 bg-card">
           <div className="p-7 sm:p-10">
             <div className="flex flex-wrap items-center gap-x-5 gap-y-2 font-mono text-[0.7rem] uppercase tracking-[0.18em] text-muted-foreground">
-              <span className="text-primary">{episodeLabel(featured, 1)}</span>
+              <span className="text-primary">{episodeLabel(featured)}</span>
               {featuredDate && (
                 <span className="flex items-center gap-1.5">
                   <Calendar className="size-3.5" /> {featuredDate}
@@ -114,7 +114,7 @@ export default async function PodcastPage() {
             All Episodes
           </p>
           <div className="mt-8 divide-y divide-border/50 border-y border-border/50">
-            {rest.map((ep, i) => {
+            {rest.map((ep) => {
               const date = formatPubDate(ep.pubDate)
               const duration = formatDuration(ep.durationSeconds)
               return (
@@ -127,7 +127,7 @@ export default async function PodcastPage() {
                   </div>
                   <div>
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-[0.68rem] uppercase tracking-[0.16em] text-muted-foreground">
-                      <span className="text-primary">{episodeLabel(ep, episodes.length - i - 1)}</span>
+                      <span className="text-primary">{episodeLabel(ep)}</span>
                       {date && <span>{date}</span>}
                       {duration && <span>{duration}</span>}
                     </div>

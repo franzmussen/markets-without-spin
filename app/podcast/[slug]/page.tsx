@@ -74,8 +74,8 @@ export async function generateMetadata({
 }
 
 function episodeLabel(ep: PodcastEpisode) {
-  if (ep.episodeNumber == null) return "Episode"
-  return `Episode ${String(ep.episodeNumber).padStart(3, "0")}`
+  if (ep.episodeNumber == null) return "Pilot Episode"
+  return `Episode ${String(ep.episodeNumber).padStart(2, "0")}`
 }
 
 export default async function EpisodeArticlePage({

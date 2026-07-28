@@ -1,22 +1,7 @@
 import { XMLParser } from "fast-xml-parser"
+import { EPISODE_ARCHIVE } from "@/lib/episodes"
 
 export const PODCAST_RSS_URL = "https://feeds.libsyn.com/622775/rss"
-
-// Fallback used only if the feed cannot be reached at request time.
-export const PILOT_FALLBACK: PodcastEpisode = {
-  id: "pilot-fallback",
-  slug: "pilot-episode-introduction-to-markets-without-spin",
-  title: "Pilot Episode: Introduction to Markets Without Spin",
-  description:
-    "A dramatic exploration of how institutions fail when incentives become distorted—and why stock buybacks, debt, and executive incentives often accelerate decline.",
-  audioUrl:
-    "https://traffic.libsyn.com/05234931-0d38-4811-b9c0-220ce4913f8b/Markets_Without_Spin_Pilot_Final_01.mp3",
-  pageUrl:
-    "https://sites.libsyn.com/622775/pilot-episode-introduction-to-markets-without-spin",
-  pubDate: null,
-  durationSeconds: null,
-  episodeNumber: 1,
-}
 
 export type PodcastEpisode = {
   id: string
@@ -121,12 +106,25 @@ export function formatPubDate(pubDate: string | null): string {
   return date.toLocaleDateString("en-US", { month: "long", year: "numeric" })
 }
 
+/** Live metadata parsed from a single RSS <item>. */
+type FeedMetadata = {
+  guid: string | null
+  episodeNumber: number | null
+  title: string
+  description: string
+  audioUrl: string | null
+  pageUrl: string | null
+  pubDate: string | null
+  durationSeconds: number | null
+}
+
 /**
- * Fetches and parses episodes from the Markets Without Spin RSS feed.
- * Episodes are returned newest-first. Revalidates hourly so newly
- * published episodes appear automatically without code changes.
+ * Fetches and parses the RSS feed into live metadata. Returns `null` when the
+ * feed cannot be reached or parsed, so callers can fall back to the archive's
+ * baked-in values. The feed is NEVER used to decide which episodes exist —
+ * only to refresh metadata on episodes defined in the permanent archive.
  */
-export async function getEpisodes(): Promise<PodcastEpisode[]> {
+async function fetchFeedMetadata(): Promise<FeedMetadata[] | null> {
   try {
     const res = await fetch(PODCAST_RSS_URL, {
       next: { revalidate: 3600 },
@@ -141,49 +139,111 @@ export async function getEpisodes(): Promise<PodcastEpisode[]> {
     })
     const data = parser.parse(xml)
     const rawItems = data?.rss?.channel?.item
-    if (!rawItems) return [PILOT_FALLBACK]
+    if (!rawItems) return null
 
     const items = Array.isArray(rawItems) ? rawItems : [rawItems]
 
-    const episodes: PodcastEpisode[] = items.map((item, index) => {
-      const enclosure = item.enclosure
-      const audioUrl = enclosure?.["@_url"] ?? null
-      const durationRaw = toText(item["itunes:duration"])
+    return items.map((item) => {
+      const audioUrl = item.enclosure?.["@_url"] ?? null
       const episodeNumberRaw = toText(item["itunes:episode"])
-      const title = stripHtml(toText(item.title))
-      const description = stripHtml(
-        toText(item.description) || toText(item["itunes:summary"]),
-      )
-
       return {
-        id: toText(item.guid) || audioUrl || `episode-${index}`,
-        slug: slugify(title || `episode-${index + 1}`),
-        title,
-        description,
+        guid: toText(item.guid) || null,
+        episodeNumber: episodeNumberRaw ? Number(episodeNumberRaw) : null,
+        title: stripHtml(toText(item.title)),
+        description: stripHtml(
+          toText(item.description) || toText(item["itunes:summary"]),
+        ),
         audioUrl,
         pageUrl: toText(item.link) || null,
         pubDate: toText(item.pubDate) || null,
-        durationSeconds: parseDuration(durationRaw),
-        episodeNumber: episodeNumberRaw ? Number(episodeNumberRaw) : null,
+        durationSeconds: parseDuration(toText(item["itunes:duration"])),
       }
     })
-
-    // Ensure slugs are unique so every episode has a distinct URL.
-    const seen = new Set<string>()
-    for (const ep of episodes) {
-      let candidate = ep.slug
-      let n = 2
-      while (seen.has(candidate)) {
-        candidate = `${ep.slug}-${n++}`
-      }
-      ep.slug = candidate
-      seen.add(candidate)
-    }
-
-    return episodes.length > 0 ? episodes : [PILOT_FALLBACK]
   } catch {
-    return [PILOT_FALLBACK]
+    return null
   }
+}
+
+/** Sorts episodes newest-first: highest episode number first, Pilot last. */
+function byNewest(a: PodcastEpisode, b: PodcastEpisode): number {
+  const na = a.episodeNumber ?? 0
+  const nb = b.episodeNumber ?? 0
+  if (nb !== na) return nb - na
+  const ta = a.pubDate ? Date.parse(a.pubDate) : 0
+  const tb = b.pubDate ? Date.parse(b.pubDate) : 0
+  return (Number.isNaN(tb) ? 0 : tb) - (Number.isNaN(ta) ? 0 : ta)
+}
+
+/**
+ * Returns every episode on the site, newest-first.
+ *
+ * The permanent archive (`EPISODE_ARCHIVE`) is the source of truth for which
+ * episodes exist. Live RSS metadata (publish date, duration, audio URL, and
+ * Libsyn page link) is merged onto each archived episode when available, but
+ * an episode is NEVER removed just because it drops out of the feed. Episodes
+ * found in the feed but not yet in the archive are appended so future
+ * episodes surface automatically (add them to the archive to make permanent).
+ */
+export async function getEpisodes(): Promise<PodcastEpisode[]> {
+  const feed = await fetchFeedMetadata()
+  const feedItems = feed ?? []
+  const usedFeedIndexes = new Set<number>()
+
+  const findFeedMatch = (
+    entry: (typeof EPISODE_ARCHIVE)[number],
+  ): FeedMetadata | null => {
+    let idx = feedItems.findIndex(
+      (f, i) => !usedFeedIndexes.has(i) && f.guid && f.guid === entry.id,
+    )
+    if (idx === -1 && entry.episodeNumber != null) {
+      idx = feedItems.findIndex(
+        (f, i) =>
+          !usedFeedIndexes.has(i) && f.episodeNumber === entry.episodeNumber,
+      )
+    }
+    if (idx === -1) return null
+    usedFeedIndexes.add(idx)
+    return feedItems[idx]
+  }
+
+  // 1. Canonical archive episodes, enriched with live metadata when present.
+  const episodes: PodcastEpisode[] = EPISODE_ARCHIVE.map((entry) => {
+    const live = findFeedMatch(entry)
+    return {
+      id: entry.id,
+      slug: entry.slug,
+      title: entry.title,
+      description: entry.summary || live?.description || "",
+      audioUrl: live?.audioUrl ?? entry.audioUrl,
+      pageUrl: live?.pageUrl ?? entry.pageUrl,
+      pubDate: live?.pubDate ?? entry.pubDate,
+      durationSeconds: live?.durationSeconds ?? entry.durationSeconds,
+      episodeNumber: entry.episodeNumber,
+    }
+  })
+
+  // 2. Feed-only episodes not yet in the archive (e.g. brand-new releases).
+  const takenSlugs = new Set(episodes.map((e) => e.slug))
+  feedItems.forEach((f, i) => {
+    if (usedFeedIndexes.has(i)) return
+    let slug = slugify(f.title || `episode-${f.episodeNumber ?? i + 1}`)
+    let n = 2
+    while (takenSlugs.has(slug)) slug = `${slugify(f.title)}-${n++}`
+    takenSlugs.add(slug)
+    episodes.push({
+      id: f.guid || f.audioUrl || `feed-episode-${i}`,
+      slug,
+      title: f.title,
+      description: f.description,
+      audioUrl: f.audioUrl,
+      pageUrl: f.pageUrl,
+      pubDate: f.pubDate,
+      durationSeconds: f.durationSeconds,
+      episodeNumber: f.episodeNumber,
+    })
+  })
+
+  return episodes.sort(byNewest)
 }
 
 /**
