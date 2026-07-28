@@ -12,9 +12,9 @@ import {
 } from "@/lib/podcast"
 
 export const metadata: Metadata = {
-  title: "Podcast Episodes — Markets Without Spin",
+  title: "Podcast Archive — Markets Without Spin",
   description:
-    "Long-form discussions exploring the incentives that shape markets, corporations, governments, and investor behavior.",
+    "The permanent archive of every Markets Without Spin episode — long-form discussions on the incentives that shape markets, corporations, governments, and investor behavior.",
 }
 
 // Refresh the page from the RSS feed hourly so new episodes appear automatically.
@@ -35,9 +35,9 @@ export default async function PodcastPage() {
 
   return (
     <PageShell
-      eyebrow="Podcast Episodes"
-      title="Conversations on the forces beneath the surface"
-      description="Long-form discussions exploring the incentives that shape markets, corporations, governments, and investor behavior."
+      eyebrow="Podcast Archive"
+      title="Every episode, permanently archived"
+      description="A complete, permanent record of every Markets Without Spin episode. Each conversation pairs with its written essay — the archive stays here even as the feed rolls forward."
     >
       {/* Listen On — platform links directly below the hero */}
       <ListenOn />
@@ -65,7 +65,7 @@ export default async function PodcastPage() {
 
             <h2 className="mt-5 max-w-3xl text-balance font-heading text-3xl font-bold leading-tight text-foreground sm:text-4xl">
               <Link
-                href={`/podcast/${featured.slug}`}
+                href={`/essays/${featured.slug}`}
                 className="transition-colors hover:text-primary"
               >
                 {featured.title}
@@ -97,10 +97,10 @@ export default async function PodcastPage() {
                 </a>
               )}
               <Link
-                href={`/podcast/${featured.slug}`}
+                href={`/essays/${featured.slug}`}
                 className="inline-flex items-center gap-2 rounded-sm border border-primary/50 px-6 py-3 font-mono text-xs uppercase tracking-[0.16em] text-primary transition-colors hover:bg-primary/10"
               >
-                <FileText className="size-4" /> Read Episode
+                <FileText className="size-4" /> Read the Essay
               </Link>
             </div>
           </div>
@@ -133,7 +133,7 @@ export default async function PodcastPage() {
                     </div>
                     <h3 className="mt-2 text-balance font-heading text-xl font-bold leading-snug text-foreground">
                       <Link
-                        href={`/podcast/${ep.slug}`}
+                        href={`/essays/${ep.slug}`}
                         className="transition-colors hover:text-primary"
                       >
                         {ep.title}
@@ -151,10 +151,10 @@ export default async function PodcastPage() {
                       />
                     )}
                     <Link
-                      href={`/podcast/${ep.slug}`}
+                      href={`/essays/${ep.slug}`}
                       className="group mt-5 inline-flex items-center gap-1.5 font-mono text-[0.7rem] uppercase tracking-[0.16em] text-primary transition-colors hover:opacity-80"
                     >
-                      <FileText className="size-3.5" /> Read Episode
+                      <FileText className="size-3.5" /> Read the Essay
                     </Link>
                   </div>
                 </article>

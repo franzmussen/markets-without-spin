@@ -12,7 +12,10 @@ export const revalidate = 3600
 export default async function HomePage() {
   const episodes = await getEpisodes()
   const episode = episodes[0]
-  const episodeNumber = episode.episodeNumber ?? 1
+  const episodeLabel =
+    episode.episodeNumber == null
+      ? "Pilot Episode"
+      : `Episode ${String(episode.episodeNumber).padStart(2, "0")}`
   const episodeDate = formatPubDate(episode.pubDate)
   const episodeDuration = formatDuration(episode.durationSeconds)
 
@@ -30,7 +33,7 @@ export default async function HomePage() {
               <div className="flex flex-wrap items-center gap-x-5 gap-y-2 font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">
                 <span className="flex items-center gap-2 text-primary">
                   <Headphones className="size-5" />
-                  Episode {String(episodeNumber).padStart(3, "0")}
+                  {episodeLabel}
                 </span>
                 {episodeDate && <span>{episodeDate}</span>}
                 {episodeDuration && <span>{episodeDuration}</span>}
@@ -43,13 +46,13 @@ export default async function HomePage() {
               </p>
               <div className="mt-7 flex flex-wrap items-center gap-3">
                 <Link
-                  href="/podcast"
+                  href={`/essays/${episode.slug}`}
                   className="inline-flex items-center gap-2 rounded-sm bg-primary px-5 py-2.5 font-mono text-xs uppercase tracking-[0.16em] text-primary-foreground transition-opacity hover:opacity-90"
                 >
                   <Headphones className="size-4" /> Listen Now
                 </Link>
                 <Link
-                  href="/essays"
+                  href={`/essays/${episode.slug}`}
                   className="inline-flex items-center gap-2 rounded-sm border border-primary/50 px-5 py-2.5 font-mono text-xs uppercase tracking-[0.16em] text-primary transition-colors hover:bg-primary/10"
                 >
                   Read the Essay <ArrowRight className="size-4" />
@@ -157,7 +160,7 @@ export default async function HomePage() {
 
         {/* Research Notes */}
         <section className="border-t border-border/40 py-16">
-          <SectionHeading eyebrow="Research Notes" title="Work in the field" href="/research-notes" />
+          <SectionHeading eyebrow="Research Notes" title="Work in the field" href="/research#notes" />
           <div className="mt-8 divide-y divide-border/50 border-y border-border/50">
             {RESEARCH_NOTES.map((note, i) => (
               <article key={note.title} className="grid gap-3 py-6 md:grid-cols-[0.5fr_2fr] md:gap-8">
@@ -175,7 +178,7 @@ export default async function HomePage() {
 
         {/* Ideas in Progress */}
         <section className="border-t border-border/40 py-16">
-          <SectionHeading eyebrow="Ideas in Progress" title="The workshop floor" href="/ideas-in-progress" />
+          <SectionHeading eyebrow="Ideas in Progress" title="The workshop floor" href="/research#ideas" />
           <div className="mt-8 grid gap-5 sm:grid-cols-3">
             {IDEAS.map((idea) => (
               <article key={idea.title} className="rounded-sm border border-dashed border-border/70 bg-secondary/20 p-6">

@@ -4,7 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useState } from "react"
 import { Menu, X } from "lucide-react"
-import { NAV, SITE } from "@/lib/content"
+import { NAV, SITE, SUBSCRIBE_HREF } from "@/lib/content"
 import { cn } from "@/lib/utils"
 
 export function SiteHeader() {
@@ -24,9 +24,9 @@ export function SiteHeader() {
         </Link>
 
         <nav className="hidden items-center gap-6 lg:flex">
-          {NAV.slice(1).map((item) => {
+          {NAV.map((item) => {
             const active = pathname === item.href
-            const isSubscribe = item.href === "/follow"
+            const isSubscribe = item.href === SUBSCRIBE_HREF
             if (isSubscribe) {
               return (
                 <Link
@@ -65,7 +65,7 @@ export function SiteHeader() {
 
       {open && (
         <nav className="border-t border-border/70 bg-background px-5 pb-6 pt-2 lg:hidden">
-          {NAV.slice(1).map((item) => {
+          {NAV.map((item) => {
             const active = pathname === item.href
             return (
               <Link

@@ -8,16 +8,23 @@ export const SITE = {
 
 export type NavItem = { label: string; href: string }
 
+// Primary navigation — five items. The logo links Home; "Subscribe" renders
+// as the highlighted button in the header.
 export const NAV: NavItem[] = [
-  { label: "Home", href: "/" },
-  { label: "Podcast Episodes", href: "/podcast" },
   { label: "Essays", href: "/essays" },
   { label: "Observations", href: "/observations" },
-  { label: "Research Notes", href: "/research-notes" },
-  { label: "Research Projects", href: "/research-projects" },
-  { label: "Ideas in Progress", href: "/ideas-in-progress" },
-  { label: "About Franz", href: "/about" },
-  { label: "Subscribe", href: "/follow" },
+  { label: "Research", href: "/research" },
+  { label: "About", href: "/about" },
+  { label: "Subscribe", href: "/subscribe" },
+]
+
+// The href that should be styled as the Subscribe button in the header.
+export const SUBSCRIBE_HREF = "/subscribe"
+
+// Secondary destinations surfaced only in the footer.
+export const FOOTER_SECONDARY: NavItem[] = [
+  { label: "Podcast Archive", href: "/podcast" },
+  { label: "Follow the Podcast", href: "/follow" },
 ]
 
 export type Essay = {

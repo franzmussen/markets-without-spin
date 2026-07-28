@@ -4,8 +4,8 @@ import { notFound } from "next/navigation"
 import {
   ArrowLeft,
   ArrowUpRight,
+  BookOpen,
   Calendar,
-  Clock,
   ExternalLink,
   FileText,
   Headphones,
@@ -16,22 +16,23 @@ import {
 import { PageShell } from "@/components/page-shell"
 import { EpisodePlayer } from "@/components/episode-player"
 import { PilotFlagshipArticle } from "@/components/pilot-flagship-article"
-
-// The pilot episode has a bespoke, long-form flagship layout.
-const FLAGSHIP_SLUG = "pilot-episode-introduction-to-markets-without-spin"
 import {
   getEpisodes,
   getEpisodeBySlug,
   getEpisodeExtras,
   formatDuration,
   formatPubDate,
+  formatReadingTime,
   type PodcastEpisode,
 } from "@/lib/podcast"
 
-// Rebuild article pages hourly so new episodes and edits appear automatically.
+// The pilot episode has a bespoke, long-form flagship layout.
+const FLAGSHIP_SLUG = "pilot-episode-introduction-to-markets-without-spin"
+
+// Rebuild essay pages hourly so new episodes and edits appear automatically.
 export const revalidate = 3600
 
-// Pre-render an article page for every episode currently in the feed.
+// Pre-render an essay page for every episode currently in the archive/feed.
 export async function generateStaticParams() {
   const episodes = await getEpisodes()
   return episodes.map((ep) => ({ slug: ep.slug }))
@@ -45,12 +46,11 @@ export async function generateMetadata({
   const { slug } = await params
   const result = await getEpisodeBySlug(slug)
   if (!result) {
-    return { title: "Episode Not Found — Markets Without Spin" }
+    return { title: "Essay Not Found — Markets Without Spin" }
   }
   const { episode } = result
   if (slug === FLAGSHIP_SLUG) {
-    const title =
-      "Markets Are Not About Numbers. They Are About Incentives."
+    const title = "Markets Are Not About Numbers. They Are About Incentives."
     const description =
       "The inaugural essay of Markets Without Spin. From the 1970 collapse of Penn Central to the unraveling of General Electric, Franz Amussen makes the case for reading markets through incentives, not numbers."
     return {
@@ -61,7 +61,7 @@ export async function generateMetadata({
   }
   const description =
     episode.description?.slice(0, 155) ||
-    "An episode of the Markets Without Spin podcast."
+    "An essay from Markets Without Spin."
   return {
     title: `${episode.title} — Markets Without Spin`,
     description,
@@ -78,7 +78,7 @@ function episodeLabel(ep: PodcastEpisode) {
   return `Episode ${String(ep.episodeNumber).padStart(2, "0")}`
 }
 
-export default async function EpisodeArticlePage({
+export default async function EssayArticlePage({
   params,
 }: {
   params: Promise<{ slug: string }>
@@ -89,7 +89,7 @@ export default async function EpisodeArticlePage({
 
   const { episode, related } = result
 
-  // The pilot episode renders as the site's flagship long-form article.
+  // The pilot episode renders as the site's flagship long-form essay.
   if (slug === FLAGSHIP_SLUG) {
     return (
       <PageShell
@@ -104,33 +104,45 @@ export default async function EpisodeArticlePage({
 
   const extras = getEpisodeExtras(slug)
   const date = formatPubDate(episode.pubDate)
-  const duration = formatDuration(episode.durationSeconds)
+  const listenTime = formatDuration(episode.durationSeconds)
+  const articleText = extras.article.flatMap((sec) => [
+    sec.heading,
+    ...sec.paragraphs,
+  ])
+  const readingTime = formatReadingTime(
+    ...(articleText.length > 0 ? articleText : [episode.description ?? ""]),
+  )
 
   return (
     <PageShell
       eyebrow={episodeLabel(episode)}
       title={episode.title}
-      description={episode.description || "Listen to this episode of Markets Without Spin."}
+      description={episode.description || "An essay from Markets Without Spin."}
     >
-      {/* Back link */}
+      {/* Back link to the permanent archive */}
       <Link
         href="/podcast"
         className="group inline-flex items-center gap-1.5 font-mono text-[0.7rem] uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:text-primary"
       >
         <ArrowLeft className="size-3.5 transition-transform group-hover:-translate-x-0.5" />
-        All Episodes
+        Podcast Archive
       </Link>
 
-      {/* Meta row */}
+      {/* Meta row: date, reading time, listening time */}
       <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 font-mono text-[0.7rem] uppercase tracking-[0.18em] text-muted-foreground">
         {date && (
           <span className="flex items-center gap-1.5">
             <Calendar className="size-3.5" /> {date}
           </span>
         )}
-        {duration && (
+        {readingTime && (
           <span className="flex items-center gap-1.5">
-            <Clock className="size-3.5" /> {duration}
+            <BookOpen className="size-3.5" /> {readingTime}
+          </span>
+        )}
+        {listenTime && (
+          <span className="flex items-center gap-1.5">
+            <Headphones className="size-3.5" /> {listenTime} listen
           </span>
         )}
       </div>
@@ -193,7 +205,7 @@ export default async function EpisodeArticlePage({
               <p>{episode.description}</p>
             ) : (
               <p>
-                A full written summary for this episode is on the way. In the
+                A full written essay for this episode is on the way. In the
                 meantime, press play above to listen to the conversation.
               </p>
             )}
@@ -264,11 +276,11 @@ export default async function EpisodeArticlePage({
         </section>
       )}
 
-      {/* Related episodes */}
+      {/* Related essays */}
       {related.length > 0 && (
         <section className="mt-16 border-t border-border/40 pt-12">
           <p className="font-mono text-[0.65rem] uppercase tracking-[0.28em] text-primary">
-            Related Episodes
+            Related Essays
           </p>
           <div className="mt-8 grid gap-px overflow-hidden rounded-sm border border-border/50 bg-border/50 sm:grid-cols-2 lg:grid-cols-3">
             {related.map((ep) => {
@@ -277,11 +289,11 @@ export default async function EpisodeArticlePage({
               return (
                 <Link
                   key={ep.id}
-                  href={`/podcast/${ep.slug}`}
+                  href={`/essays/${ep.slug}`}
                   className="group flex flex-col gap-3 bg-card p-6 transition-colors hover:bg-card/60"
                 >
                   <div className="flex items-center gap-2 font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted-foreground">
-                    <Headphones className="size-3.5 text-primary" />
+                    <FileText className="size-3.5 text-primary" />
                     <span className="text-primary">{episodeLabel(ep)}</span>
                   </div>
                   <h3 className="text-balance font-heading text-lg font-bold leading-snug text-foreground transition-colors group-hover:text-primary">

@@ -106,6 +106,22 @@ export function formatPubDate(pubDate: string | null): string {
   return date.toLocaleDateString("en-US", { month: "long", year: "numeric" })
 }
 
+/**
+ * Estimates reading time from written text at ~220 words per minute.
+ * Accepts any number of strings (paragraphs, headings, etc.). Returns an
+ * empty string when there is no meaningful text.
+ */
+export function formatReadingTime(...parts: string[]): string {
+  const words = parts
+    .join(" ")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean).length
+  if (words < 20) return ""
+  const minutes = Math.max(1, Math.round(words / 220))
+  return `${minutes} min read`
+}
+
 /** Live metadata parsed from a single RSS <item>. */
 type FeedMetadata = {
   guid: string | null

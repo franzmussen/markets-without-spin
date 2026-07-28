@@ -261,7 +261,7 @@ export function PilotFlagshipArticle({ episode }: { episode: PodcastEpisode }) {
         className="group inline-flex items-center gap-1.5 font-mono text-[0.7rem] uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:text-primary"
       >
         <ArrowLeft className="size-3.5 transition-transform group-hover:-translate-x-0.5" />
-        All Episodes
+        Podcast Archive
       </Link>
 
       {/* Meta / byline row */}

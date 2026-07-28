@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { NAV, SITE } from "@/lib/content"
+import { NAV, SITE, FOOTER_SECONDARY } from "@/lib/content"
 
 export function SiteFooter() {
   return (
@@ -18,10 +18,10 @@ export function SiteFooter() {
 
           <div>
             <p className="font-mono text-[0.62rem] uppercase tracking-[0.24em] text-muted-foreground">
-              Read &amp; Listen
+              Explore
             </p>
             <ul className="mt-4 space-y-2.5">
-              {NAV.slice(1, 6).map((item) => (
+              {NAV.map((item) => (
                 <li key={item.href}>
                   <Link
                     href={item.href}
@@ -36,10 +36,10 @@ export function SiteFooter() {
 
           <div>
             <p className="font-mono text-[0.62rem] uppercase tracking-[0.24em] text-muted-foreground">
-              More
+              Podcast
             </p>
             <ul className="mt-4 space-y-2.5">
-              {NAV.slice(6).map((item) => (
+              {FOOTER_SECONDARY.map((item) => (
                 <li key={item.href}>
                   <Link
                     href={item.href}
