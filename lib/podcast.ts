@@ -5,6 +5,7 @@ export const PODCAST_RSS_URL = "https://feeds.libsyn.com/622775/rss"
 // Fallback used only if the feed cannot be reached at request time.
 export const PILOT_FALLBACK: PodcastEpisode = {
   id: "pilot-fallback",
+  slug: "pilot-episode-introduction-to-markets-without-spin",
   title: "Pilot Episode: Introduction to Markets Without Spin",
   description:
     "A dramatic exploration of how institutions fail when incentives become distorted—and why stock buybacks, debt, and executive incentives often accelerate decline.",
@@ -19,6 +20,7 @@ export const PILOT_FALLBACK: PodcastEpisode = {
 
 export type PodcastEpisode = {
   id: string
+  slug: string
   title: string
   description: string
   audioUrl: string | null
@@ -26,6 +28,43 @@ export type PodcastEpisode = {
   pubDate: string | null
   durationSeconds: number | null
   episodeNumber: number | null
+}
+
+export type EpisodeReference = { label: string; url?: string }
+
+export type EpisodeExtras = {
+  keyTakeaways: string[]
+  references: EpisodeReference[]
+  transcript: string | null
+}
+
+/**
+ * Supplemental, editorially-curated content keyed by episode slug.
+ * The RSS feed does not provide key takeaways, references, or transcripts,
+ * so add them here as episodes are produced. Any episode without an entry
+ * gracefully falls back to placeholder sections on its article page.
+ */
+export const EPISODE_EXTRAS: Record<string, Partial<EpisodeExtras>> = {}
+
+export function getEpisodeExtras(slug: string): EpisodeExtras {
+  const extras = EPISODE_EXTRAS[slug] ?? {}
+  return {
+    keyTakeaways: extras.keyTakeaways ?? [],
+    references: extras.references ?? [],
+    transcript: extras.transcript ?? null,
+  }
+}
+
+/** Builds a URL-safe slug from an episode title. */
+export function slugify(input: string): string {
+  const slug = input
+    .toLowerCase()
+    .replace(/&/g, " and ")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80)
+    .replace(/-+$/g, "")
+  return slug || "episode"
 }
 
 function toText(value: unknown): string {
@@ -102,13 +141,15 @@ export async function getEpisodes(): Promise<PodcastEpisode[]> {
       const audioUrl = enclosure?.["@_url"] ?? null
       const durationRaw = toText(item["itunes:duration"])
       const episodeNumberRaw = toText(item["itunes:episode"])
+      const title = stripHtml(toText(item.title))
       const description = stripHtml(
         toText(item.description) || toText(item["itunes:summary"]),
       )
 
       return {
         id: toText(item.guid) || audioUrl || `episode-${index}`,
-        title: stripHtml(toText(item.title)),
+        slug: slugify(title || `episode-${index + 1}`),
+        title,
         description,
         audioUrl,
         pageUrl: toText(item.link) || null,
@@ -118,8 +159,36 @@ export async function getEpisodes(): Promise<PodcastEpisode[]> {
       }
     })
 
+    // Ensure slugs are unique so every episode has a distinct URL.
+    const seen = new Set<string>()
+    for (const ep of episodes) {
+      let candidate = ep.slug
+      let n = 2
+      while (seen.has(candidate)) {
+        candidate = `${ep.slug}-${n++}`
+      }
+      ep.slug = candidate
+      seen.add(candidate)
+    }
+
     return episodes.length > 0 ? episodes : [PILOT_FALLBACK]
   } catch {
     return [PILOT_FALLBACK]
   }
+}
+
+/**
+ * Looks up a single episode by its slug and returns it alongside a few
+ * related episodes (most recent others) for the article page. Returns
+ * null when no episode matches the slug.
+ */
+export async function getEpisodeBySlug(
+  slug: string,
+): Promise<{ episode: PodcastEpisode; related: PodcastEpisode[] } | null> {
+  const episodes = await getEpisodes()
+  const index = episodes.findIndex((ep) => ep.slug === slug)
+  if (index === -1) return null
+  const episode = episodes[index]
+  const related = episodes.filter((_, i) => i !== index).slice(0, 3)
+  return { episode, related }
 }
