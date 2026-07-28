@@ -1,7 +1,6 @@
 import Link from "next/link"
 import {
   ArrowLeft,
-  ArrowUpRight,
   BookMarked,
   Calendar,
   Clock,
@@ -16,18 +15,6 @@ import {
   formatPubDate,
   type PodcastEpisode,
 } from "@/lib/podcast"
-
-/**
- * The "Next in the Series" destination. Update the slug here if the series
- * ordering changes — the display copy is intentionally fixed per editorial.
- */
-const NEXT_IN_SERIES = {
-  href: "/podcast/episode-1-credit-ratings-incentives-and-how-safe-companies-become-dangerous",
-  kicker: "Episode 1",
-  title: "Executive Compensation — The Real Engine Behind Stock Buybacks",
-  description:
-    "How executive pay structures quietly shape capital allocation decisions and why shareholders often pay the price.",
-}
 
 type Block =
   | { type: "p"; text: string }
@@ -420,31 +407,6 @@ export function PilotFlagshipArticle({ episode }: { episode: PodcastEpisode }) {
             All Platforms
           </Link>
         </div>
-      </section>
-
-      {/* Next in the Series */}
-      <section className="mt-14 border-t border-border/40 pt-12">
-        <p className="font-mono text-[0.65rem] uppercase tracking-[0.28em] text-primary">
-          Next in the Series
-        </p>
-        <Link
-          href={NEXT_IN_SERIES.href}
-          className="group mt-6 flex flex-col gap-4 rounded-sm border border-border/60 bg-card p-8 transition-colors hover:border-primary/50 hover:bg-card/70 sm:p-10"
-        >
-          <span className="flex items-center gap-2 font-mono text-[0.62rem] uppercase tracking-[0.18em] text-primary">
-            <Headphones className="size-3.5" /> {NEXT_IN_SERIES.kicker}
-          </span>
-          <span className="text-balance font-heading text-2xl font-bold leading-snug text-foreground transition-colors group-hover:text-primary">
-            {NEXT_IN_SERIES.title}
-          </span>
-          <span className="max-w-xl text-pretty font-serif text-lg leading-relaxed text-muted-foreground">
-            {NEXT_IN_SERIES.description}
-          </span>
-          <span className="mt-1 inline-flex items-center gap-1.5 font-mono text-[0.7rem] uppercase tracking-[0.18em] text-primary">
-            Read the episode
-            <ArrowUpRight className="size-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-          </span>
-        </Link>
       </section>
     </article>
   )
