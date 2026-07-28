@@ -4,7 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useState } from "react"
 import { Menu, X } from "lucide-react"
-import { NAV, SITE } from "@/lib/content"
+import { NAV, SITE, SUBSCRIBE_HREF } from "@/lib/content"
 import { cn } from "@/lib/utils"
 
 export function SiteHeader() {
@@ -24,20 +24,9 @@ export function SiteHeader() {
         </Link>
 
         <nav className="hidden items-center gap-6 lg:flex">
-          {NAV.slice(1).map((item) => {
-            const active = pathname === item.href
-            const isSubscribe = item.href === "/follow"
-            if (isSubscribe) {
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="rounded-sm border border-primary px-4 py-1.5 font-mono text-[0.7rem] uppercase tracking-[0.18em] text-primary transition-colors hover:bg-primary hover:text-primary-foreground"
-                >
-                  {item.label}
-                </Link>
-              )
-            }
+          {NAV.map((item) => {
+            const active =
+              pathname === item.href || pathname.startsWith(`${item.href}/`)
             return (
               <Link
                 key={item.href}
@@ -51,6 +40,12 @@ export function SiteHeader() {
               </Link>
             )
           })}
+          <Link
+            href={SUBSCRIBE_HREF}
+            className="rounded-sm border border-primary px-4 py-1.5 font-mono text-[0.7rem] uppercase tracking-[0.18em] text-primary transition-colors hover:bg-primary hover:text-primary-foreground"
+          >
+            Subscribe
+          </Link>
         </nav>
 
         <button
@@ -65,8 +60,9 @@ export function SiteHeader() {
 
       {open && (
         <nav className="border-t border-border/70 bg-background px-5 pb-6 pt-2 lg:hidden">
-          {NAV.slice(1).map((item) => {
-            const active = pathname === item.href
+          {NAV.map((item) => {
+            const active =
+              pathname === item.href || pathname.startsWith(`${item.href}/`)
             return (
               <Link
                 key={item.href}
@@ -81,6 +77,13 @@ export function SiteHeader() {
               </Link>
             )
           })}
+          <Link
+            href={SUBSCRIBE_HREF}
+            onClick={() => setOpen(false)}
+            className="mt-4 block rounded-sm border border-primary px-4 py-2.5 text-center font-mono text-xs uppercase tracking-[0.18em] text-primary"
+          >
+            Subscribe
+          </Link>
         </nav>
       )}
     </header>

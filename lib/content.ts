@@ -8,16 +8,24 @@ export const SITE = {
 
 export type NavItem = { label: string; href: string }
 
+// Primary navigation — the intended long-term information architecture.
+// Five items; the logo links Home.
 export const NAV: NavItem[] = [
-  { label: "Home", href: "/" },
-  { label: "Podcast Episodes", href: "/podcast" },
   { label: "Essays", href: "/essays" },
+  { label: "Podcast", href: "/podcast" },
+  { label: "Research", href: "/research" },
+  { label: "Incentives Index", href: "/incentives-index" },
+  { label: "About", href: "/about" },
+]
+
+// The href styled as the highlighted button in the header.
+export const SUBSCRIBE_HREF = "/subscribe"
+
+// Secondary destinations surfaced only in the footer.
+export const FOOTER_SECONDARY: NavItem[] = [
   { label: "Observations", href: "/observations" },
-  { label: "Research Notes", href: "/research-notes" },
-  { label: "Research Projects", href: "/research-projects" },
-  { label: "Ideas in Progress", href: "/ideas-in-progress" },
-  { label: "About Franz", href: "/about" },
-  { label: "Subscribe", href: "/follow" },
+  { label: "Follow the Podcast", href: "/follow" },
+  { label: "Subscribe", href: "/subscribe" },
 ]
 
 export type Essay = {

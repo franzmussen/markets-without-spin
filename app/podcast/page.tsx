@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import Link from "next/link"
 import { Headphones, FileText, Calendar, Clock } from "lucide-react"
 import { PageShell } from "@/components/page-shell"
 import { EpisodePlayer } from "@/components/episode-player"
@@ -11,17 +12,17 @@ import {
 } from "@/lib/podcast"
 
 export const metadata: Metadata = {
-  title: "Podcast Episodes — Markets Without Spin",
+  title: "Podcast Archive — Markets Without Spin",
   description:
-    "Long-form discussions exploring the incentives that shape markets, corporations, governments, and investor behavior.",
+    "The permanent archive of every Markets Without Spin episode — long-form discussions on the incentives that shape markets, corporations, governments, and investor behavior.",
 }
 
 // Refresh the page from the RSS feed hourly so new episodes appear automatically.
 export const revalidate = 3600
 
-function episodeLabel(ep: PodcastEpisode, fallbackIndex: number) {
-  const num = ep.episodeNumber ?? fallbackIndex
-  return `Episode ${String(num).padStart(3, "0")}`
+function episodeLabel(ep: PodcastEpisode) {
+  if (ep.episodeNumber == null) return "Pilot Episode"
+  return `Episode ${String(ep.episodeNumber).padStart(2, "0")}`
 }
 
 export default async function PodcastPage() {
@@ -34,9 +35,9 @@ export default async function PodcastPage() {
 
   return (
     <PageShell
-      eyebrow="Podcast Episodes"
-      title="Conversations on the forces beneath the surface"
-      description="Long-form discussions exploring the incentives that shape markets, corporations, governments, and investor behavior."
+      eyebrow="Podcast Archive"
+      title="Every episode, permanently archived"
+      description="A complete, permanent record of every Markets Without Spin episode. Each conversation pairs with its written essay — the archive stays here even as the feed rolls forward."
     >
       {/* Listen On — platform links directly below the hero */}
       <ListenOn />
@@ -49,7 +50,7 @@ export default async function PodcastPage() {
         <article className="mt-6 overflow-hidden rounded-sm border border-border/60 bg-card">
           <div className="p-7 sm:p-10">
             <div className="flex flex-wrap items-center gap-x-5 gap-y-2 font-mono text-[0.7rem] uppercase tracking-[0.18em] text-muted-foreground">
-              <span className="text-primary">{episodeLabel(featured, 1)}</span>
+              <span className="text-primary">{episodeLabel(featured)}</span>
               {featuredDate && (
                 <span className="flex items-center gap-1.5">
                   <Calendar className="size-3.5" /> {featuredDate}
@@ -63,7 +64,12 @@ export default async function PodcastPage() {
             </div>
 
             <h2 className="mt-5 max-w-3xl text-balance font-heading text-3xl font-bold leading-tight text-foreground sm:text-4xl">
-              {featured.title}
+              <Link
+                href={`/essays/${featured.slug}`}
+                className="transition-colors hover:text-primary"
+              >
+                {featured.title}
+              </Link>
             </h2>
             {featured.description && (
               <p className="mt-5 max-w-2xl text-pretty font-serif text-lg leading-relaxed text-muted-foreground">
@@ -90,16 +96,12 @@ export default async function PodcastPage() {
                   <Headphones className="size-4" /> Listen Now
                 </a>
               )}
-              {featured.pageUrl && (
-                <a
-                  href={featured.pageUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-sm border border-primary/50 px-6 py-3 font-mono text-xs uppercase tracking-[0.16em] text-primary transition-colors hover:bg-primary/10"
-                >
-                  <FileText className="size-4" /> Episode Page
-                </a>
-              )}
+              <Link
+                href={`/essays/${featured.slug}`}
+                className="inline-flex items-center gap-2 rounded-sm border border-primary/50 px-6 py-3 font-mono text-xs uppercase tracking-[0.16em] text-primary transition-colors hover:bg-primary/10"
+              >
+                <FileText className="size-4" /> Read the Essay
+              </Link>
             </div>
           </div>
         </article>
@@ -112,7 +114,7 @@ export default async function PodcastPage() {
             All Episodes
           </p>
           <div className="mt-8 divide-y divide-border/50 border-y border-border/50">
-            {rest.map((ep, i) => {
+            {rest.map((ep) => {
               const date = formatPubDate(ep.pubDate)
               const duration = formatDuration(ep.durationSeconds)
               return (
@@ -125,23 +127,17 @@ export default async function PodcastPage() {
                   </div>
                   <div>
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-[0.68rem] uppercase tracking-[0.16em] text-muted-foreground">
-                      <span className="text-primary">{episodeLabel(ep, episodes.length - i - 1)}</span>
+                      <span className="text-primary">{episodeLabel(ep)}</span>
                       {date && <span>{date}</span>}
                       {duration && <span>{duration}</span>}
                     </div>
                     <h3 className="mt-2 text-balance font-heading text-xl font-bold leading-snug text-foreground">
-                      {ep.pageUrl ? (
-                        <a
-                          href={ep.pageUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="transition-colors hover:text-primary"
-                        >
-                          {ep.title}
-                        </a>
-                      ) : (
-                        ep.title
-                      )}
+                      <Link
+                        href={`/essays/${ep.slug}`}
+                        className="transition-colors hover:text-primary"
+                      >
+                        {ep.title}
+                      </Link>
                     </h3>
                     {ep.description && (
                       <p className="mt-2 max-w-2xl text-pretty leading-relaxed text-muted-foreground">
@@ -154,6 +150,12 @@ export default async function PodcastPage() {
                         initialDuration={ep.durationSeconds ?? 0}
                       />
                     )}
+                    <Link
+                      href={`/essays/${ep.slug}`}
+                      className="group mt-5 inline-flex items-center gap-1.5 font-mono text-[0.7rem] uppercase tracking-[0.16em] text-primary transition-colors hover:opacity-80"
+                    >
+                      <FileText className="size-3.5" /> Read the Essay
+                    </Link>
                   </div>
                 </article>
               )
