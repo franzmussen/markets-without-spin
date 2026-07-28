@@ -15,6 +15,10 @@ import {
 } from "lucide-react"
 import { PageShell } from "@/components/page-shell"
 import { EpisodePlayer } from "@/components/episode-player"
+import { PilotFlagshipArticle } from "@/components/pilot-flagship-article"
+
+// The pilot episode has a bespoke, long-form flagship layout.
+const FLAGSHIP_SLUG = "pilot-episode-introduction-to-markets-without-spin"
 import {
   getEpisodes,
   getEpisodeBySlug,
@@ -44,6 +48,17 @@ export async function generateMetadata({
     return { title: "Episode Not Found — Markets Without Spin" }
   }
   const { episode } = result
+  if (slug === FLAGSHIP_SLUG) {
+    const title =
+      "Markets Are Not About Numbers. They Are About Incentives."
+    const description =
+      "The inaugural essay of Markets Without Spin. From the 1970 collapse of Penn Central to the unraveling of General Electric, Franz Amussen makes the case for reading markets through incentives, not numbers."
+    return {
+      title: `${title} — Markets Without Spin`,
+      description,
+      openGraph: { title, description, type: "article" },
+    }
+  }
   const description =
     episode.description?.slice(0, 155) ||
     "An episode of the Markets Without Spin podcast."
@@ -73,6 +88,20 @@ export default async function EpisodeArticlePage({
   if (!result) notFound()
 
   const { episode, related } = result
+
+  // The pilot episode renders as the site's flagship long-form article.
+  if (slug === FLAGSHIP_SLUG) {
+    return (
+      <PageShell
+        eyebrow="Pilot Episode · Flagship Essay"
+        title="Markets Are Not About Numbers. They Are About Incentives."
+        description="The inaugural essay of Markets Without Spin — how the incentives acting on the people behind a company, not the numbers on its statements, ultimately decide whether shareholders prosper or suffer."
+      >
+        <PilotFlagshipArticle episode={episode} />
+      </PageShell>
+    )
+  }
+
   const extras = getEpisodeExtras(slug)
   const date = formatPubDate(episode.pubDate)
   const duration = formatDuration(episode.durationSeconds)
