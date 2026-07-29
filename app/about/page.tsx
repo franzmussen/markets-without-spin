@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import Image from "next/image"
 import { PageShell } from "@/components/page-shell"
+import { ContactForm } from "@/components/contact-form"
 
 export const metadata: Metadata = {
   title: "About Franz — Markets Without Spin",
@@ -60,6 +61,31 @@ export default function AboutPage() {
           </figure>
         </aside>
       </div>
+
+      <section
+        id="contact"
+        aria-labelledby="contact-heading"
+        className="mt-16 border-t border-border/60 pt-12 lg:mt-24 lg:pt-16"
+      >
+        <div className="max-w-2xl">
+          <p className="font-mono text-[0.7rem] uppercase tracking-[0.24em] text-primary">
+            Contact
+          </p>
+          <h2
+            id="contact-heading"
+            className="mt-3 font-heading text-3xl font-semibold text-foreground text-balance"
+          >
+            Get in touch
+          </h2>
+          <p className="mt-4 font-serif text-lg leading-relaxed text-foreground/80 text-pretty">
+            Questions, disagreements, or ideas worth exploring are all welcome.
+            Send a note using the form below and it will reach me directly.
+          </p>
+        </div>
+        <div className="mt-8 max-w-2xl">
+          <ContactForm />
+        </div>
+      </section>
     </PageShell>
   )
 }
