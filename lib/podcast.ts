@@ -34,8 +34,9 @@ export type EpisodeExtras = {
  * so add them here as episodes are produced. Any episode without an entry
  * renders only the sections that have real content on its article page.
  *
- * Note: the pilot episode is rendered as a bespoke flagship article
- * (see components/pilot-flagship-article.tsx) and does not use this map.
+ * Note: flagship essays (the Pilot and numbered episode essays) are rendered
+ * from lib/flagship-essays.ts via components/flagship-article.tsx and do not
+ * use this map.
  */
 export const EPISODE_EXTRAS: Record<string, Partial<EpisodeExtras>> = {}
 
