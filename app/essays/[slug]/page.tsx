@@ -15,7 +15,8 @@ import {
 } from "lucide-react"
 import { PageShell } from "@/components/page-shell"
 import { EpisodePlayer } from "@/components/episode-player"
-import { PilotFlagshipArticle } from "@/components/pilot-flagship-article"
+import { FlagshipArticle } from "@/components/flagship-article"
+import { getFlagshipEssay } from "@/lib/flagship-essays"
 import {
   getEpisodes,
   getEpisodeBySlug,
@@ -25,9 +26,6 @@ import {
   formatReadingTime,
   type PodcastEpisode,
 } from "@/lib/podcast"
-
-// The pilot episode has a bespoke, long-form flagship layout.
-const FLAGSHIP_SLUG = "pilot-episode-introduction-to-markets-without-spin"
 
 // Rebuild essay pages hourly so new episodes and edits appear automatically.
 export const revalidate = 3600
@@ -49,14 +47,16 @@ export async function generateMetadata({
     return { title: "Essay Not Found — Markets Without Spin" }
   }
   const { episode } = result
-  if (slug === FLAGSHIP_SLUG) {
-    const title = "Markets Are Not About Numbers. They Are About Incentives."
-    const description =
-      "The inaugural essay of Markets Without Spin. From the 1970 collapse of Penn Central to the unraveling of General Electric, Franz Amussen makes the case for reading markets through incentives, not numbers."
+  const flagship = getFlagshipEssay(slug)
+  if (flagship) {
     return {
-      title: `${title} — Markets Without Spin`,
-      description,
-      openGraph: { title, description, type: "article" },
+      title: `${flagship.seo.title} — Markets Without Spin`,
+      description: flagship.seo.description,
+      openGraph: {
+        title: flagship.seo.title,
+        description: flagship.seo.ogDescription,
+        type: "article",
+      },
     }
   }
   const description =
@@ -89,15 +89,17 @@ export default async function EssayArticlePage({
 
   const { episode, related } = result
 
-  // The pilot episode renders as the site's flagship long-form essay.
-  if (slug === FLAGSHIP_SLUG) {
+  // Flagship essays (the Pilot and numbered episode essays) share one
+  // long-form, data-driven layout keyed by slug.
+  const flagship = getFlagshipEssay(slug)
+  if (flagship) {
     return (
       <PageShell
-        eyebrow="Pilot Episode · Flagship Essay"
-        title="Markets Are Not About Numbers. They Are About Incentives."
-        description="The inaugural essay of Markets Without Spin — how the incentives acting on the people behind a company, not the numbers on its statements, ultimately decide whether shareholders prosper or suffer."
+        eyebrow={flagship.eyebrow}
+        title={flagship.title}
+        description={flagship.description}
       >
-        <PilotFlagshipArticle episode={episode} />
+        <FlagshipArticle content={flagship} episode={episode} />
       </PageShell>
     )
   }
