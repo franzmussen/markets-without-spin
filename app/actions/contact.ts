@@ -3,6 +3,7 @@
 import { createHash } from "crypto"
 import { headers } from "next/headers"
 import { and, eq, gte, sql } from "drizzle-orm"
+import { Resend } from "resend"
 import { db } from "@/lib/db"
 import { contactMessages } from "@/lib/db/schema"
 
@@ -28,7 +29,21 @@ async function getIpHash(): Promise<string | null> {
   return createHash("sha256").update(`mws-contact:${ip}`).digest("hex")
 }
 
-/** Sends the message to the site owner via Resend, if configured. */
+/** Escapes user-supplied text for safe inclusion in the HTML email body. */
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;")
+}
+
+/**
+ * Sends the message to the site owner via the Resend SDK.
+ * Throws if Resend is not configured or the send fails, so the caller can log
+ * it. Logs are prefixed with [v0] so delivery can be traced in the runtime logs.
+ */
 async function sendEmail(
   name: string,
   email: string,
@@ -38,33 +53,44 @@ async function sendEmail(
   const to = process.env.CONTACT_EMAIL
   if (!apiKey || !to) {
     console.log(
-      "[v0] contact: email not sent (RESEND_API_KEY or CONTACT_EMAIL not set); message saved to database",
+      "[v0] contact: skipping email — RESEND_API_KEY set:",
+      Boolean(apiKey),
+      "CONTACT_EMAIL set:",
+      Boolean(to),
     )
-    return
+    throw new Error("email-not-configured")
   }
 
-  const from = process.env.CONTACT_FROM || "Markets Without Spin <onboarding@resend.dev>"
+  // Must be an address on a domain verified in Resend. Falls back to Resend's
+  // shared onboarding sender, which can only deliver to the account owner.
+  const from =
+    process.env.CONTACT_FROM || "Markets Without Spin <onboarding@resend.dev>"
 
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from,
-      to: [to],
-      reply_to: email,
-      subject: `New contact message from ${name}`,
-      text: `Name: ${name}\nEmail: ${email}\n\n${message}`,
-    }),
+  const resend = new Resend(apiKey)
+  const safeMessage = escapeHtml(message).replace(/\n/g, "<br />")
+
+  console.log("[v0] contact: calling Resend SDK, to:", to, "from:", from)
+
+  const { data, error } = await resend.emails.send({
+    from,
+    to: [to],
+    replyTo: email,
+    subject: `New contact message from ${name}`,
+    text: `Name: ${name}\nEmail: ${email}\n\n${message}`,
+    html: `<div style="font-family:system-ui,sans-serif;line-height:1.5">
+      <p><strong>Name:</strong> ${escapeHtml(name)}</p>
+      <p><strong>Email:</strong> ${escapeHtml(email)}</p>
+      <hr style="border:none;border-top:1px solid #ddd;margin:16px 0" />
+      <p>${safeMessage}</p>
+    </div>`,
   })
 
-  if (!res.ok) {
-    const detail = await res.text().catch(() => "")
-    console.log("[v0] contact: Resend send failed:", res.status, detail)
+  if (error) {
+    console.log("[v0] contact: Resend SDK error:", JSON.stringify(error))
     throw new Error("email-send-failed")
   }
+
+  console.log("[v0] contact: Resend accepted message, id:", data?.id)
 }
 
 export async function sendContactMessage(
@@ -122,12 +148,17 @@ export async function sendContactMessage(
     // 4. Persist the message (durable record, independent of email delivery).
     await db.insert(contactMessages).values({ name, email, message, ipHash })
 
-    // 5. Best-effort email notification to the site owner.
+    // 5. Best-effort email notification to the site owner. The message is
+    // already stored in Neon, so a delivery failure never loses the message —
+    // we log it and still acknowledge the visitor rather than asking them to
+    // resend (which would duplicate the stored record).
     try {
       await sendEmail(name, email, message)
-    } catch {
-      // Email failed but the message is safely stored; still acknowledge to the
-      // visitor so they aren't asked to resend (which would duplicate the record).
+    } catch (emailError) {
+      console.log(
+        "[v0] contact: email notification failed (message still saved):",
+        emailError instanceof Error ? emailError.message : emailError,
+      )
     }
 
     return {
